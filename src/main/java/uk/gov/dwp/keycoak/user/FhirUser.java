@@ -1,9 +1,9 @@
-package dasniko.keycoak.user;
+package uk.gov.dwp.keycoak.user;
 
 /**
  * @author Niko Köbler, http://www.n-k.de, @dasniko
  */
-public class DemoUser {
+public class FhirUser {
 
     private String id;
     private String username;
@@ -12,10 +12,10 @@ public class DemoUser {
     private String lastName;
     private String password;
 
-    public DemoUser() {
+    public FhirUser() {
     }
 
-    public DemoUser(String id, String firstName, String lastName) {
+    public FhirUser(String id, String firstName, String lastName) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;

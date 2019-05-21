@@ -1,4 +1,4 @@
-package dasniko.keycoak.user;
+package uk.gov.dwp.keycoak.user;
 
 import java.util.Arrays;
 import java.util.List;
@@ -7,22 +7,22 @@ import java.util.stream.Collectors;
 /**
  * @author Niko Köbler, http://www.n-k.de, @dasniko
  */
-class DemoRepository {
+class FhirRepository {
 
-    private List<DemoUser> users;
+    private List<FhirUser> users;
 
-    DemoRepository() {
+    FhirRepository() {
         users = Arrays.asList(
-                new DemoUser("1", "Fred", "Flintstone"),
-                new DemoUser("3", "Wilma", "Flintstone"),
-                new DemoUser("5", "Pebbles", "Flintstone"),
-                new DemoUser("2", "Barney", "Rubble"),
-                new DemoUser("4", "Betty", "Rubble"),
-                new DemoUser("6", "Bam Bam", "Rubble")
+                new FhirUser("1", "Fred", "Flintstone"),
+                new FhirUser("3", "Wilma", "Flintstone"),
+                new FhirUser("5", "Pebbles", "Flintstone"),
+                new FhirUser("2", "Barney", "Rubble"),
+                new FhirUser("4", "Betty", "Rubble"),
+                new FhirUser("6", "Bam Bam", "Rubble")
         );
     }
 
-    List<DemoUser> getAllUsers() {
+    List<FhirUser> getAllUsers() {
         return users;
     }
 
@@ -30,17 +30,17 @@ class DemoRepository {
         return users.size();
     }
 
-    DemoUser findUserById(String id) {
+    FhirUser findUserById(String id) {
         return users.stream().filter(user -> user.getId().equals(id)).findFirst().orElse(null);
     }
 
-    DemoUser findUserByUsernameOrEmail(String username) {
+    FhirUser findUserByUsernameOrEmail(String username) {
         return users.stream()
                 .filter(user -> user.getUsername().equalsIgnoreCase(username) || user.getEmail().equalsIgnoreCase(username))
                 .findFirst().orElse(null);
     }
 
-    List<DemoUser> findUsers(String query) {
+    List<FhirUser> findUsers(String query) {
         return users.stream()
                 .filter(user -> user.getUsername().contains(query) || user.getEmail().contains(query))
                 .collect(Collectors.toList());

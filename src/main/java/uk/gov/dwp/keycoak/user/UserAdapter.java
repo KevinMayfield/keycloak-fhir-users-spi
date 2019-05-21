@@ -1,4 +1,4 @@
-package dasniko.keycoak.user;
+package uk.gov.dwp.keycoak.user;
 
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.KeycloakSession;
@@ -11,10 +11,10 @@ import org.keycloak.storage.adapter.AbstractUserAdapterFederatedStorage;
  */
 public class UserAdapter extends AbstractUserAdapterFederatedStorage {
 
-    private final DemoUser user;
+    private final FhirUser user;
     private final String keycloakId;
 
-    public UserAdapter(KeycloakSession session, RealmModel realm, ComponentModel model, DemoUser user) {
+    public UserAdapter(KeycloakSession session, RealmModel realm, ComponentModel model, FhirUser user) {
         super(session, realm, model);
         this.user = user;
         this.keycloakId = StorageId.keycloakId(model, user.getId());

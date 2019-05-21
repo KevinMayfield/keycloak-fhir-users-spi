@@ -1,1 +1,1 @@
-dasniko.keycoak.user.DemoUserStorageProviderFactory
+uk.gov.dwp.keycoak.user.FhirUserStorageProviderFactory

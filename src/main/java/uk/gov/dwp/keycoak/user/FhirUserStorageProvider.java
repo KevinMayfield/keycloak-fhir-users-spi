@@ -1,4 +1,4 @@
-package dasniko.keycoak.user;
+package uk.gov.dwp.keycoak.user;
 
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialInput;
@@ -25,14 +25,14 @@ import java.util.stream.Collectors;
 /**
  * @author Niko Köbler, http://www.n-k.de, @dasniko
  */
-public class DemoUserStorageProvider implements UserStorageProvider,
+public class FhirUserStorageProvider implements UserStorageProvider,
         UserLookupProvider, UserQueryProvider, CredentialInputUpdater, CredentialInputValidator {
 
     private final KeycloakSession session;
     private final ComponentModel model;
-    private final DemoRepository repository;
+    private final FhirRepository repository;
 
-    public DemoUserStorageProvider(KeycloakSession session, ComponentModel model, DemoRepository repository) {
+    public FhirUserStorageProvider(KeycloakSession session, ComponentModel model, FhirRepository repository) {
         this.session = session;
         this.model = model;
         this.repository = repository;
