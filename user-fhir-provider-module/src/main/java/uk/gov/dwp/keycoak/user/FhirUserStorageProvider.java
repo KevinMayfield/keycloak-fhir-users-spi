@@ -35,13 +35,14 @@ public class FhirUserStorageProvider implements UserStorageProvider,
 
     private final KeycloakSession session;
     private final ComponentModel model;
-
+    private final FhirContext ctx;
 
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(FhirUserStorageProvider.class);
 
     public FhirUserStorageProvider(KeycloakSession session, ComponentModel model) {
         this.session = session;
         this.model = model;
+        this.ctx = FhirContext.forDstu3();
 
     }
 
@@ -109,11 +110,11 @@ public class FhirUserStorageProvider implements UserStorageProvider,
 
     @Override
     public UserModel getUserById(String id, RealmModel realm) {
-        log.info("getUserById");
+        log.info("getUserById "+id);
         String externalId = StorageId.externalId(id);
         String fs = model.getConfig().getFirst("fhirUrl");
         if (fs == null) throw new ComponentValidationException("user property file does not exist");
-        FhirContext ctx = FhirContext.forDstu3();
+
 
         IGenericClient client = ctx.newRestfulGenericClient(fs);
 
@@ -129,23 +130,8 @@ public class FhirUserStorageProvider implements UserStorageProvider,
 
     @Override
     public UserModel getUserByUsername(String username, RealmModel realm) {
-        log.info("getUserByUsername " + username);
-        String fs = model.getConfig().getFirst("fhirUrl");
-        if (fs == null) throw new ComponentValidationException("user property file does not exist");
-        FhirContext ctx = FhirContext.forDstu3();
-
-        IGenericClient client = ctx.newRestfulGenericClient(fs);
-
-        Bundle results = client.search().forResource(Person.class)
-                .where(new StringClientParam(Person.SP_NAME).matches().value(username))
-                .returnBundle(Bundle.class)
-                .execute();
-        for (Bundle.BundleEntryComponent entry : results.getEntry()) {
-            if (entry.getResource() instanceof Person) {
-                return new UserAdapter(session, realm, model, (Person) entry.getResource());
-            }
-        }
-        return null;
+        log.info("getUserByUsername "+username);
+        return getUserById(username.replace("Person/",""), realm);
     }
 
     @Override
@@ -153,7 +139,7 @@ public class FhirUserStorageProvider implements UserStorageProvider,
         log.info("getUserByEmail " + email);
         String fs = model.getConfig().getFirst("fhirUrl");
         if (fs == null) throw new ComponentValidationException("user property file does not exist");
-        FhirContext ctx = FhirContext.forDstu3();
+
 
         IGenericClient client = ctx.newRestfulGenericClient(fs);
 

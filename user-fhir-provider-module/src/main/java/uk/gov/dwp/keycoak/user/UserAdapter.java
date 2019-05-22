@@ -15,6 +15,8 @@ public class UserAdapter extends AbstractUserAdapterFederatedStorage {
 
     private final Person user;
     private final String keycloakId;
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserAdapter.class);
+
 
 
     public UserAdapter(KeycloakSession session, RealmModel realm, ComponentModel model, Person user) {
@@ -30,10 +32,11 @@ public class UserAdapter extends AbstractUserAdapterFederatedStorage {
 
     @Override
     public String getUsername() {
-        if (user.hasName()) {
-            return user.getNameFirstRep().getNameAsSingleString();
-        }
-        return null;
+        log.info("user.getId() - "+ user.getId());
+        log.info("user.getIdBase() - "+ user.getIdBase());
+        log.info("user.getIdElement() - "+ user.getIdElement());
+        log.info("user.getIdElement().getIdPart() - "+ user.getIdElement().getIdPart());
+        return "Person/"+user.getIdElement().getIdPart();
     }
 
     @Override
