@@ -17,9 +17,9 @@ public class FhirUserStorageProviderFactory implements UserStorageProviderFactor
     public FhirUserStorageProvider create(KeycloakSession session, ComponentModel model) {
         // here you can setup the user storage provider, initiate some connections, etc.
 
-        FhirRepository repository = new FhirRepository();
+        //FhirRepository repository = new FhirRepository();
 
-        return new FhirUserStorageProvider(session, model, repository);
+        return new FhirUserStorageProvider(session, model);
     }
 
     @Override

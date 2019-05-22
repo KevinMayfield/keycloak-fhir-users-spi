@@ -1,5 +1,7 @@
 package uk.gov.dwp.keycoak.user;
 
+import org.hl7.fhir.dstu3.model.ContactPoint;
+import org.hl7.fhir.dstu3.model.Person;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
@@ -11,10 +13,11 @@ import org.keycloak.storage.adapter.AbstractUserAdapterFederatedStorage;
  */
 public class UserAdapter extends AbstractUserAdapterFederatedStorage {
 
-    private final FhirUser user;
+    private final Person user;
     private final String keycloakId;
 
-    public UserAdapter(KeycloakSession session, RealmModel realm, ComponentModel model, FhirUser user) {
+
+    public UserAdapter(KeycloakSession session, RealmModel realm, ComponentModel model, Person user) {
         super(session, realm, model);
         this.user = user;
         this.keycloakId = StorageId.keycloakId(model, user.getId());
@@ -27,41 +30,58 @@ public class UserAdapter extends AbstractUserAdapterFederatedStorage {
 
     @Override
     public String getUsername() {
-        return user.getUsername();
+        if (user.hasName()) {
+            return user.getNameFirstRep().getNameAsSingleString();
+        }
+        return null;
     }
 
     @Override
     public void setUsername(String username) {
-        user.setUsername(username);
+
+        // user.setUsername(username);
     }
 
     @Override
     public String getEmail() {
-        return user.getEmail();
+        if (user.hasTelecom()) {
+            for (ContactPoint contactPoint : user.getTelecom()) {
+                if (contactPoint.hasSystem() && contactPoint.getSystem().equals(ContactPoint.ContactPointSystem.EMAIL)) {
+                    return contactPoint.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     @Override
     public void setEmail(String email) {
-        user.setEmail(email);
+        // user.setEmail(email);
     }
 
     @Override
     public String getFirstName() {
-        return user.getFirstName();
+        if (user.hasName()) {
+            return user.getNameFirstRep().getGivenAsSingleString();
+        }
+        return null;
     }
 
     @Override
     public void setFirstName(String firstName) {
-        user.setFirstName(firstName);
+        // user.setFirstName(firstName);
     }
 
     @Override
     public String getLastName() {
-        return user.getLastName();
+        if (user.hasName()) {
+            return user.getNameFirstRep().getFamily();
+        }
+        return null;
     }
 
     @Override
     public void setLastName(String lastName) {
-        user.setLastName(lastName);
+        //user.setLastName(lastName);
     }
 }

@@ -1,6 +1,14 @@
 package uk.gov.dwp.keycoak.user;
 
+import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.rest.client.api.IGenericClient;
+import ca.uhn.fhir.rest.gclient.StringClientParam;
+import ca.uhn.fhir.rest.gclient.TokenClientParam;
+
+import org.hl7.fhir.dstu3.model.Bundle;
+import org.hl7.fhir.dstu3.model.Person;
 import org.keycloak.component.ComponentModel;
+import org.keycloak.component.ComponentValidationException;
 import org.keycloak.credential.CredentialInput;
 import org.keycloak.credential.CredentialInputUpdater;
 import org.keycloak.credential.CredentialInputValidator;
@@ -16,10 +24,7 @@ import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.user.UserLookupProvider;
 import org.keycloak.storage.user.UserQueryProvider;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -30,12 +35,14 @@ public class FhirUserStorageProvider implements UserStorageProvider,
 
     private final KeycloakSession session;
     private final ComponentModel model;
-    private final FhirRepository repository;
 
-    public FhirUserStorageProvider(KeycloakSession session, ComponentModel model, FhirRepository repository) {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(FhirUserStorageProvider.class);
+
+    public FhirUserStorageProvider(KeycloakSession session, ComponentModel model) {
         this.session = session;
         this.model = model;
-        this.repository = repository;
+
     }
 
     @Override
@@ -50,21 +57,30 @@ public class FhirUserStorageProvider implements UserStorageProvider,
 
     @Override
     public boolean isValid(RealmModel realm, UserModel user, CredentialInput input) {
+        log.info("isValid");
+        return false;
+        /*
         if (!supportsCredentialType(input.getType()) || !(input instanceof UserCredentialModel)) {
             return false;
         }
         UserCredentialModel cred = (UserCredentialModel) input;
-        return repository.validateCredentials(user.getUsername(), cred.getValue());
+        return repository.validateCredentials(user.getUsername(), cred.getValue());*/
     }
 
     @Override
     public boolean updateCredential(RealmModel realm, UserModel user, CredentialInput input) {
+        log.info("updateCredentials");
+        return false;
+        /*
         if (!supportsCredentialType(input.getType()) || !(input instanceof UserCredentialModel)) {
             return false;
         }
         UserCredentialModel cred = (UserCredentialModel) input;
         return repository.updateCredentials(user.getUsername(), cred.getValue());
+        */
+
     }
+
 
     @Override
     public void disableCredentialType(RealmModel realm, UserModel user, String credentialType) {
@@ -93,46 +109,107 @@ public class FhirUserStorageProvider implements UserStorageProvider,
 
     @Override
     public UserModel getUserById(String id, RealmModel realm) {
+        log.info("getUserById");
         String externalId = StorageId.externalId(id);
-        return new UserAdapter(session, realm, model, repository.findUserById(externalId));
+        String fs = model.getConfig().getFirst("fhirUrl");
+        if (fs == null) throw new ComponentValidationException("user property file does not exist");
+        FhirContext ctx = FhirContext.forDstu3();
+
+        IGenericClient client = ctx.newRestfulGenericClient(fs);
+
+        Person person = client.read()
+                .resource(Person.class)
+                .withId(id)
+                .execute();
+        if (person != null) {
+                return new UserAdapter(session, realm, model, person);
+            }
+        return null;
     }
 
     @Override
     public UserModel getUserByUsername(String username, RealmModel realm) {
-        return new UserAdapter(session, realm, model, repository.findUserByUsernameOrEmail(username));
+        log.info("getUserByUsername " + username);
+        String fs = model.getConfig().getFirst("fhirUrl");
+        if (fs == null) throw new ComponentValidationException("user property file does not exist");
+        FhirContext ctx = FhirContext.forDstu3();
+
+        IGenericClient client = ctx.newRestfulGenericClient(fs);
+
+        Bundle results = client.search().forResource(Person.class)
+                .where(new StringClientParam(Person.SP_NAME).matches().value(username))
+                .returnBundle(Bundle.class)
+                .execute();
+        for (Bundle.BundleEntryComponent entry : results.getEntry()) {
+            if (entry.getResource() instanceof Person) {
+                return new UserAdapter(session, realm, model, (Person) entry.getResource());
+            }
+        }
+        return null;
     }
 
     @Override
     public UserModel getUserByEmail(String email, RealmModel realm) {
+        log.info("getUserByEmail " + email);
+        String fs = model.getConfig().getFirst("fhirUrl");
+        if (fs == null) throw new ComponentValidationException("user property file does not exist");
+        FhirContext ctx = FhirContext.forDstu3();
+
+        IGenericClient client = ctx.newRestfulGenericClient(fs);
+
+        Bundle results = client.search().forResource(Person.class)
+                .where(new TokenClientParam(Person.SP_EMAIL).exactly().systemAndValues("email",email))
+                .returnBundle(Bundle.class)
+                .execute();
+        for (Bundle.BundleEntryComponent entry : results.getEntry()) {
+            if (entry.getResource() instanceof Person) {
+                return new UserAdapter(session, realm, model, (Person) entry.getResource());
+            }
+        }
         return getUserByUsername(email, realm);
     }
 
     @Override
     public int getUsersCount(RealmModel realm) {
-        return repository.getUsersCount();
+        return 0; //repository.getUsersCount();
     }
 
     @Override
     public List<UserModel> getUsers(RealmModel realm) {
+        log.info("getUsers1");
+        return new ArrayList<>();
+        /*
         return repository.getAllUsers().stream()
                 .map(user -> new UserAdapter(session, realm, model, user))
                 .collect(Collectors.toList());
+
+         */
     }
 
     @Override
     public List<UserModel> getUsers(RealmModel realm, int firstResult, int maxResults) {
+        log.info("getUsers2");
+        return new ArrayList<>();
+        /*
         return getUsers(realm);
+
+         */
     }
 
     @Override
     public List<UserModel> searchForUser(String search, RealmModel realm) {
-        return repository.findUsers(search).stream()
+        log.info("searchForUser1");
+        return new ArrayList<>();
+        /*return repository.findUsers(search).stream()
                 .map(user -> new UserAdapter(session, realm, model, user))
                 .collect(Collectors.toList());
+
+         */
     }
 
     @Override
     public List<UserModel> searchForUser(String search, RealmModel realm, int firstResult, int maxResults) {
+        log.info("searchForUser2");
         return searchForUser(search, realm);
     }
 
@@ -158,6 +235,7 @@ public class FhirUserStorageProvider implements UserStorageProvider,
 
     @Override
     public List<UserModel> searchForUserByUserAttribute(String attrName, String attrValue, RealmModel realm) {
+        log.info("searchForUserByUserAttribute");
         return null;
     }
 }
