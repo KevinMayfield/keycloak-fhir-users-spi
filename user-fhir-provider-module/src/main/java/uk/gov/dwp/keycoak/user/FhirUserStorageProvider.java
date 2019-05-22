@@ -5,6 +5,7 @@ import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.gclient.StringClientParam;
 import ca.uhn.fhir.rest.gclient.TokenClientParam;
 
+import ca.uhn.fhir.rest.server.exceptions.ResourceNotFoundException;
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.Person;
 import org.keycloak.component.ComponentModel;
@@ -117,14 +118,17 @@ public class FhirUserStorageProvider implements UserStorageProvider,
 
 
         IGenericClient client = ctx.newRestfulGenericClient(fs);
-
-        Person person = client.read()
-                .resource(Person.class)
-                .withId(id)
-                .execute();
-        if (person != null) {
+        try {
+            Person person = client.read()
+                    .resource(Person.class)
+                    .withId(id)
+                    .execute();
+            if (person != null) {
                 return new UserAdapter(session, realm, model, person);
             }
+        } catch (ResourceNotFoundException notFound) {
+            return null;
+        }
         return null;
     }
 
